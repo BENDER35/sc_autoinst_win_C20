@@ -1,0 +1,58 @@
+stages:
+  - validate
+  - mirror
+
+variables:
+  GIT_DEPTH: "0"
+
+validate-catalog:
+  stage: validate
+  image: node:20-alpine
+  script:
+    - apk add --no-cache jq
+    - jq -e '.schemaVersion == 1 and (.apps | length > 0)' app-catalog.json
+    - jq -e '([.apps[].id] | length) == ([.apps[].id] | unique | length)' app-catalog.json
+    - jq -e 'all(.apps[]; has("id") and has("action") and has("sizeMB"))' app-catalog.json
+    - test -f Install-Apps.ps1
+    - test -f README.md
+    - test -f docs/GUIA-DIDACTICA-ES.md
+    - test -f docs/GUIDE-EN.md
+    - test -f docs/GUIDA-DIDACTICA-AST.md
+
+mirror-to-github:
+  stage: mirror
+  image: alpine:3.20
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+  variables:
+    GIT_STRATEGY: fetch
+  before_script:
+    - apk add --no-cache git
+    - git config --global user.name mirror-bot
+    - git config --global user.email mirror-bot@users.noreply.gitlab.com
+  script:
+    - |
+      MSG="$(git log -1 --pretty=%B)"
+      echo "$MSG"
+      if printf '%s' "$MSG" | grep -q '\[skip mirror\]'; then
+        echo "Commit de mirror: no se reenvia."
+        exit 0
+      fi
+    - |
+      if [ -z "$GH_TOKEN" ]; then
+        echo "Falta la variable GH_TOKEN" >&2
+        exit 1
+      fi
+      git remote add github "https://x-access-token:${GH_TOKEN}@github.com/BENDER35/sc_autoinst_win_C20.git"
+    - |
+      if git fetch github main; then
+        if [ "$(git rev-parse HEAD)" = "$(git rev-parse FETCH_HEAD)" ]; then
+          echo "Ya estan sincronizados."
+          exit 0
+        fi
+        git merge --no-edit -m "chore: sync from GitHub [skip mirror]" FETCH_HEAD \
+          || { echo "Conflicto al fusionar GitHub -> GitLab" >&2; exit 1; }
+      fi
+    - git push github HEAD:main
+    - echo "Sincronizado GitLab -> GitHub: $(git rev-parse HEAD)"

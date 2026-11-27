@@ -1,0 +1,35 @@
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  catalog-and-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validar catalogo JSON
+        run: |
+          jq -e '.schemaVersion == 1 and (.apps | length > 0)' app-catalog.json
+          jq -e '([.apps[].id] | length) == ([.apps[].id] | unique | length)' app-catalog.json
+          jq -e 'all(.apps[]; has("id") and has("action") and has("sizeMB") and has("winget") and has("choco") and has("scoop"))' app-catalog.json
+          echo "Aplicaciones: $(jq '.apps | length' app-catalog.json)"
+
+      - name: Comprobar documentacion
+        run: |
+          for f in README.md LICENSE docs/GUIA-DIDACTICA-ES.md docs/GUIDE-EN.md docs/GUIDA-DIDACTICA-AST.md docs/MIRROR.md; do
+            test -s "$f" || { echo "Falta $f" >&2; exit 1; }
+          done
+
+      - name: Comprobar sintaxis basica de PowerShell
+        run: |
+          grep -q '^param(' Install-Apps.ps1
+          grep -q 'Get-CimInstance' Install-Apps.ps1
+          grep -q 'winget' Install-Apps.ps1
