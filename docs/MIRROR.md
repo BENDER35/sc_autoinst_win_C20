@@ -91,9 +91,13 @@ registra en el historial de commits y en las ejecuciones de los workflows.
 - [x] Workflow de GitHub instalado
 - [x] Pipeline de GitLab instalado
 - [x] Marcador anti-bucles implementado
-- [ ] Push de prueba GitHub → GitLab comprobado
-- [ ] Push de prueba GitLab → GitHub comprobado
-- [ ] Hashes finales iguales
+- [x] Push de prueba GitHub → GitLab comprobado (commit `test: verificar mirror github -> gitlab`, workflow `45957759115` correcto)
+- [x] Push de prueba GitLab → GitHub comprobado (commit `test: verificar mirror gitlab -> github`, pipeline `3122148374` correcto)
+- [x] Hashes finales iguales en `main`: `03d37d3e9c19b137295fea9df465ccb439e1f02d`
+
+Nota: los tres primeros pipelines de GitLab fallaron por un YAML con `:` sin
+comillas en un `echo`; se corrigió en el commit `fix: corregir lint de GitLab CI y
+log del mirror` y el pipeline siguiente terminó en `success`.
 
 ## Recuperación
 
