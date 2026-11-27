@@ -110,3 +110,4 @@ git push gitlab fix-mirror:main
 
 No uses `--force` salvo que hayas confirmado que un lado está corrupto.
 2026-11-27T08:20:16+01:00 prueba github -> gitlab
+2026-11-27T08:20:40+01:00 prueba gitlab -> github
