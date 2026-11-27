@@ -55,4 +55,4 @@ mirror-to-github:
           || { echo "Conflicto al fusionar GitHub -> GitLab" >&2; exit 1; }
       fi
     - git push github HEAD:main
-    - echo "Sincronizado GitLab -> GitHub: $(git rev-parse HEAD)"
+    - 'echo "Sincronizado GitLab -> GitHub: $(git rev-parse HEAD)"'

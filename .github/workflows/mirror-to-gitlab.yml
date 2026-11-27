@@ -69,4 +69,4 @@ jobs:
           fi
 
           git push gitlab HEAD:main
-          echo "Sincronizado GitHub -> GitLab: $(git rev-parse HEAD)"
+          echo 'Sincronizado GitHub -> GitLab:' "$(git rev-parse HEAD)"
